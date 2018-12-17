@@ -7,15 +7,16 @@ logentries,
 logentriesToken,
 mainFilename,
 os,
+path,
 prod,
 Raygun,
 winston,
 _;
 
-_ = require('lodash');
 conf = require('config');
 fclone = require('fclone');
 os = require('os');
+path = require('path');
 Raygun = require('winston-raygun');
 winston = require('winston');
 require('winston-log-and-exit');
@@ -26,7 +27,7 @@ It shouldn't require a code change to set logging prefs.
 */
 winston.exitOnError = false;
 
-mainFilename = _.last(process.mainModule.filename.split('/'));
+mainFilename = path.basename(process.mainModule.filename);
 hostname = os.hostname();
 
 var logger = new (winston.Logger)({
