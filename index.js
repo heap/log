@@ -1,24 +1,9 @@
-var appInstance,
-conf,
-defaultLogger,
-facilityMap,
-hostname,
-logentries,
-logentriesToken,
-mainFilename,
-os,
-path,
-prod,
-Raygun,
-winston,
-_;
-
-conf = require('config');
-fclone = require('fclone');
-os = require('os');
-path = require('path');
-Raygun = require('winston-raygun');
-winston = require('winston');
+var conf = require('config');
+var fclone = require('fclone');
+var os = require('os');
+var path = require('path');
+var Raygun = require('winston-raygun');
+var winston = require('winston');
 require('winston-log-and-exit');
 
 /*
@@ -27,8 +12,8 @@ It shouldn't require a code change to set logging prefs.
 */
 winston.exitOnError = false;
 
-mainFilename = path.basename(process.mainModule.filename);
-hostname = os.hostname();
+var mainFilename = path.basename(process.mainModule.filename);
+var hostname = os.hostname();
 
 var logger = new (winston.Logger)({
   rewriters: [
@@ -41,7 +26,7 @@ var logger = new (winston.Logger)({
   ]
 });
 
-prod = process.env.NODE_ENV === 'prod';
+var prod = process.env.NODE_ENV === 'prod';
 logger.add(winston.transports.Console, {
   colorize: (process.env.LOG_COLOR || 'yes') !== 'no',
   timestamp: prod,
@@ -49,7 +34,7 @@ logger.add(winston.transports.Console, {
 });
 
 // In an effort to minimize noisiness, manually specify what gets logged to Raygun.
-raygunLog = Raygun.prototype.log;
+var raygunLog = Raygun.prototype.log;
 Raygun.prototype.log = function(level, msg, meta, callback){
   if (meta.logToRaygun) {
     raygunLog.call(this, level, msg, meta, callback);
