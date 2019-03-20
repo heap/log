@@ -5,7 +5,6 @@
   "dependencies": {
     "config": "1.25.1",
     "fclone": "1.0.11",
-    "winston-raygun": "0.0.6",
     "winston-log-and-exit": "1.0.6"
   }
 }
