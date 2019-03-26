@@ -2,6 +2,7 @@ var fclone = require('fclone');
 var os = require('os');
 var path = require('path');
 var winston = require('winston');
+var argv = require('yargs').argv;
 require('winston-log-and-exit');
 
 /*
@@ -11,6 +12,12 @@ It shouldn't require a code change to set logging prefs.
 winston.exitOnError = false;
 
 var mainFilename = path.basename(process.mainModule.filename);
+
+// :KLUDGE: Add special handling for our pm2 loading setup.
+if (mainFilename === 'pm2_loader.js') {
+  mainFilename = path.basename(argv.pm2Path);
+}
+
 var hostname = os.hostname();
 
 var logger = new (winston.Logger)({
