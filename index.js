@@ -15,7 +15,13 @@ var mainFilename = path.basename(process.mainModule.filename);
 
 // :KLUDGE: Add special handling for our pm2 loading setup.
 if (mainFilename === 'pm2_loader.js') {
-  mainFilename = path.basename(argv.pm2Path);
+  try {
+    mainFilename = path.basename(argv.pm2path)
+  }
+  catch (e) {
+    // An error was encountered, likely because pm2path wasn't passed
+    // in. In this case we'll just use pm2_loader for the mainfilename.
+  };
 }
 
 var hostname = os.hostname();
