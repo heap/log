@@ -11,7 +11,10 @@ It shouldn't require a code change to set logging prefs.
 */
 winston.exitOnError = false;
 
-var mainFilename = path.basename(process.mainModule.filename);
+// process.mainModule is undefined when node reads from STDIN.
+var mainFilename = process.mainModule == null
+    ? 'unknown'
+    : path.basename(process.mainModule.filename);
 
 // :KLUDGE: Add special handling for our pm2 loading setup.
 if (mainFilename === 'pm2_loader.js') {
