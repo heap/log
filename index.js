@@ -42,12 +42,13 @@ var logger = new (winston.Logger)({
 
 var prod = process.env.NODE_ENV === 'prod';
 logger.add(winston.transports.Console, {
-  colorize: (process.env.LOG_COLOR || 'yes') !== 'no',
+  colorize: false,
   timestamp: prod,
   level: process.env.LOG_LEVEL || 'info'
 });
 
-if (prod) {
+var notECS = !( typeof process.env.HEAP_ECS !== 'undefined' && process.env.HEAP_ECS );
+if (prod && notECS) {
   var fluentConfig = {
     host: 'localhost',
     port: 24224,
