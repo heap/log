@@ -47,7 +47,7 @@ logger.add(winston.transports.Console, {
   level: process.env.LOG_LEVEL || 'info'
 });
 
-var notECS = !( typeof process.env.HEAP_ECS !== 'undefined' && process.env.HEAP_ECS );
+var notECS = !( typeof process.env.HEAP_ECS !== 'undefined' && process.env.HEAP_ECS == "true" );
 if (prod && notECS) {
   var fluentConfig = {
     host: 'localhost',
