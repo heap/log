@@ -40,15 +40,15 @@ var logger = new (winston.Logger)({
   ]
 });
 
-var prod = process.env.NODE_ENV === 'prod';
+var isProd = process.env.NODE_ENV === 'prod';
 logger.add(winston.transports.Console, {
   colorize: false,
-  timestamp: prod,
+  timestamp: isProd,
   level: process.env.LOG_LEVEL || 'info'
 });
 
-var notECS = !( typeof process.env.HEAP_ECS !== 'undefined' && process.env.HEAP_ECS == "true" );
-if (prod && notECS) {
+var isECS = ( typeof process.env.HEAP_ECS !== 'undefined' && process.env.HEAP_ECS == "true" );
+if (isProd && !isECS) {
   var fluentConfig = {
     host: 'localhost',
     port: 24224,
