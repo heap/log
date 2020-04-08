@@ -41,13 +41,14 @@ var logger = new (winston.Logger)({
 });
 
 var isProd = process.env.NODE_ENV === 'prod';
+var isECS = ( typeof process.env.HEAP_ECS !== 'undefined' && process.env.HEAP_ECS == 'true' );
 logger.add(winston.transports.Console, {
+  json: isECS,
   colorize: false,
   timestamp: isProd,
   level: process.env.LOG_LEVEL || 'info'
 });
 
-var isECS = ( typeof process.env.HEAP_ECS !== 'undefined' && process.env.HEAP_ECS == "true" );
 if (isProd && !isECS) {
   var fluentConfig = {
     host: 'localhost',
