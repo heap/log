@@ -5,6 +5,9 @@ var winston = require('winston');
 var argv = require('yargs').argv;
 require('winston-log-and-exit');
 
+var isProd = process.env.NODE_ENV === 'prod';
+var isECS = process.env.HEAP_ECS == 'true';
+
 /*
 TODO: This should be configured by an external file.
 It shouldn't require a code change to set logging prefs.
@@ -29,22 +32,50 @@ if (mainFilename === 'pm2_loader.js') {
 
 var hostname = os.hostname();
 
-var logger = new (winston.Logger)({
-  rewriters: [
-    function(label, msg, meta) {
-      meta = fclone(meta); // Remove circular references.
-      meta.mainFilename = mainFilename;
-      meta.hostname = hostname;
+var rewriters = [
+  function(label, msg, meta) {
+    meta = fclone(meta); // Remove circular references.
+    meta.mainFilename = mainFilename;
+    meta.hostname = hostname;
+    return meta;
+  }
+]
+
+if (isECS) {
+  rewriters.push(function(label,msg, meta) {
+    // First, check if the meta object is actually an error. In this case we want to preserve
+    // the error message (which would otherwise be clobbered by the log message). Winston populates
+    // the `name` field of the meta object with the class of the object if available, so just check
+    // for `name === 'Error'` here.
+    if (meta.name === 'Error') {
+      meta.error_message = meta.message
+      delete meta.message;
+      delete meta.name; // This field just looks confusing.
       return meta;
     }
-  ]
-});
 
-var isProd = process.env.NODE_ENV === 'prod';
-var isECS = ( typeof process.env.HEAP_ECS !== 'undefined' && process.env.HEAP_ECS == 'true' );
+    // Otherwise, we expect the meta object to be tags for the log line. Apply some rudimentary
+    // sanitizing here to filter out unexpected nested objects. All of our tags should be either
+    // string or number values.
+    for (var key of Object.keys(meta)) {
+      var value = meta[key];
+      var isString = typeof value === 'string';
+      var isNumber = typeof value === 'number';
+      if (!isString && !isNumber) {
+        meta[key] = 'Redacted due to non-string/number value';
+      }
+    }
+
+    return meta;
+  })
+}
+
+var logger = new (winston.Logger)({rewriters});
+
 logger.add(winston.transports.Console, {
   json: isECS,
-  colorize: false,
+  stringify: (obj) => JSON.stringify(obj),
+  colorize: !isECS,
   timestamp: isProd,
   level: process.env.LOG_LEVEL || 'info'
 });
