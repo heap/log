@@ -55,14 +55,14 @@ if (isECS) {
     }
 
     // Otherwise, we expect the meta object to be tags for the log line. Apply some rudimentary
-    // sanitizing here to filter out unexpected nested objects. All of our tags should be either
+    // sanitizing here to stringify unexpected nested objects. All of our tags should be either
     // string or number values.
     for (var key of Object.keys(meta)) {
       var value = meta[key];
       var isString = typeof value === 'string';
       var isNumber = typeof value === 'number';
       if (!isString && !isNumber) {
-        meta[key] = 'Redacted due to non-string/number value';
+        meta[key] = '' + JSON.stringify(value);
       }
     }
 
