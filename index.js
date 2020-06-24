@@ -6,7 +6,7 @@ var argv = require('yargs').argv;
 require('winston-log-and-exit');
 
 var isProd = process.env.NODE_ENV === 'prod';
-var isECS = process.env.HEAP_ECS == 'true';
+var isECS = process.env.HEAP_ECS === 'true';
 
 /*
 TODO: This should be configured by an external file.
@@ -27,7 +27,7 @@ if (mainFilename === 'pm2_loader.js') {
   catch (e) {
     // An error was encountered, likely because pm2path wasn't passed
     // in. In this case we'll just use pm2_loader for the mainfilename.
-  };
+  }
 }
 
 var hostname = os.hostname();
