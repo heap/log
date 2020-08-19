@@ -8,7 +8,7 @@ import { MetadataRewriter } from 'winston';
 import { argv } from 'yargs';
 import { FLUENT_HOST, FLUENT_PORT, FLUENT_TIMEOUT } from './constants';
 
-const fluentLogger = require('fluent-logger')
+const fluentLogger = require('fluent-logger');
 
 require('winston-log-and-exit');
 
@@ -26,16 +26,14 @@ It shouldn't require a code change to set logging prefs.
 (winston as any).exitOnError = false;
 
 // process.mainModule is undefined when node reads from STDIN.
-let mainFilename = process.mainModule === null
-    ? 'unknown'
-    : path.basename(process.mainModule.filename);
+let mainFilename =
+  process.mainModule === null ? 'unknown' : path.basename(process.mainModule.filename);
 
 // :KLUDGE: Add special handling for our pm2 loading setup.
 if (mainFilename === 'pm2_loader.js') {
   try {
-    mainFilename = path.basename((argv as any as HeapArgV).pm2path)
-  }
-  catch (e) {
+    mainFilename = path.basename(((argv as any) as HeapArgV).pm2path);
+  } catch (e) {
     // An error was encountered, likely because pm2path wasn't passed
     // in. In this case we'll just use pm2_loader for the mainfilename.
   }
@@ -49,8 +47,8 @@ const rewriters: Array<MetadataRewriter> = [
     meta.mainFilename = mainFilename;
     meta.hostname = hostname;
     return meta;
-  }
-]
+  },
+];
 
 if (isECS) {
   rewriters.push((label, msg, meta) => {
@@ -59,7 +57,7 @@ if (isECS) {
     // the `name` field of the meta object with the class of the object if available, so just check
     // for `name === 'Error'` here.
     if (meta.name === 'Error') {
-      meta.error_message = meta.message
+      meta.error_message = meta.message;
       delete meta.message;
       delete meta.name; // This field just looks confusing.
       return meta;
@@ -78,7 +76,7 @@ if (isECS) {
     }
 
     return meta;
-  })
+  });
 }
 
 const logger = new winston.Logger();
@@ -88,7 +86,7 @@ logger.add(winston.transports.Console, {
   stringify: (obj) => JSON.stringify(obj),
   colorize: !isECS,
   timestamp: isProd,
-  level: process.env.LOG_LEVEL || 'info'
+  level: process.env.LOG_LEVEL || 'info',
 });
 
 if (isProd && !isECS) {
