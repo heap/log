@@ -1,28 +1,39 @@
-var fclone = require('fclone');
-var os = require('os');
-var path = require('path');
-var winston = require('winston');
-var argv = require('yargs').argv;
+import * as os from 'os';
+import * as path from 'path';
+
+import * as winston from 'winston';
+import fclone from 'fclone';
+
+import { MetadataRewriter } from 'winston';
+import { argv } from 'yargs';
+import { FLUENT_HOST, FLUENT_PORT, FLUENT_TIMEOUT } from './constants';
+
+const fluentLogger = require('fluent-logger')
+
 require('winston-log-and-exit');
 
-var isProd = process.env.NODE_ENV === 'prod';
-var isECS = process.env.HEAP_ECS === 'true';
+const isProd = process.env.NODE_ENV === 'prod';
+const isECS = process.env.HEAP_ECS === 'true';
+
+type HeapArgV = {
+  pm2path: string;
+};
 
 /*
 TODO: This should be configured by an external file.
 It shouldn't require a code change to set logging prefs.
 */
-winston.exitOnError = false;
+(winston as any).exitOnError = false;
 
 // process.mainModule is undefined when node reads from STDIN.
-var mainFilename = process.mainModule == null
+let mainFilename = process.mainModule === null
     ? 'unknown'
     : path.basename(process.mainModule.filename);
 
 // :KLUDGE: Add special handling for our pm2 loading setup.
 if (mainFilename === 'pm2_loader.js') {
   try {
-    mainFilename = path.basename(argv.pm2path)
+    mainFilename = path.basename((argv as any as HeapArgV).pm2path)
   }
   catch (e) {
     // An error was encountered, likely because pm2path wasn't passed
@@ -30,10 +41,10 @@ if (mainFilename === 'pm2_loader.js') {
   }
 }
 
-var hostname = os.hostname();
+const hostname = os.hostname();
 
-var rewriters = [
-  function(label, msg, meta) {
+const rewriters: Array<MetadataRewriter> = [
+  (label, msg, meta) => {
     meta = fclone(meta); // Remove circular references.
     meta.mainFilename = mainFilename;
     meta.hostname = hostname;
@@ -42,7 +53,7 @@ var rewriters = [
 ]
 
 if (isECS) {
-  rewriters.push(function(label,msg, meta) {
+  rewriters.push((label, msg, meta) => {
     // First, check if the meta object is actually an error. In this case we want to preserve
     // the error message (which would otherwise be clobbered by the log message). Winston populates
     // the `name` field of the meta object with the class of the object if available, so just check
@@ -57,10 +68,10 @@ if (isECS) {
     // Otherwise, we expect the meta object to be tags for the log line. Apply some rudimentary
     // sanitizing here to stringify unexpected nested objects. All of our tags should be either
     // string or number values.
-    for (var key of Object.keys(meta)) {
-      var value = meta[key];
-      var isString = typeof value === 'string';
-      var isNumber = typeof value === 'number';
+    for (const key of Object.keys(meta)) {
+      const value = meta[key];
+      const isString = typeof value === 'string';
+      const isNumber = typeof value === 'number';
       if (!isString && !isNumber) {
         meta[key] = '' + JSON.stringify(value);
       }
@@ -70,8 +81,8 @@ if (isECS) {
   })
 }
 
-var logger = new (winston.Logger)({rewriters});
-
+const logger = new winston.Logger();
+logger.rewriters = rewriters;
 logger.add(winston.transports.Console, {
   json: isECS,
   stringify: (obj) => JSON.stringify(obj),
@@ -81,13 +92,13 @@ logger.add(winston.transports.Console, {
 });
 
 if (isProd && !isECS) {
-  var fluentConfig = {
-    host: 'localhost',
-    port: 24224,
-    timeout: 3.0
+  const fluentConfig = {
+    host: FLUENT_HOST,
+    port: FLUENT_PORT,
+    timeout: FLUENT_TIMEOUT,
   };
-  var fluentTransport = require('fluent-logger').support.winstonTransport();
-  var transport = new fluentTransport('heap.coffee', fluentConfig);
+  const fluentTransport = fluentLogger.support.winstonTransport();
+  const transport = new fluentTransport('heap.coffee', fluentConfig);
   logger.add(transport, null, true);
 }
 

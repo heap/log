@@ -7,5 +7,11 @@
     "fclone": "1.0.11",
     "winston-log-and-exit": "1.0.6",
     "yargs": "3.30.0"
+  },
+  "devDependencies": {
+    "@types/node": "10.17.24",
+    "@types/winston": "2.2.0",
+    "@types/yargs": "15.0.5",
+    "winston": "2.2.0"
   }
 }
