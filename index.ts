@@ -82,7 +82,7 @@ if (isECS) {
 const logger = new winston.Logger();
 logger.rewriters = rewriters;
 logger.add(winston.transports.Console, {
-  json: isECS,
+  json: true,
   stringify: (obj) => JSON.stringify(obj),
   colorize: !isECS,
   timestamp: isProd,
