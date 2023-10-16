@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Heap logging util",
   "dependencies": {
-    "config": "1.25.1",
     "fclone": "1.0.11",
     "winston-log-and-exit": "1.0.6",
     "yargs": "3.30.0"
