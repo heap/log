@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "pretty": true,
+    "strict": true,
+    "skipLibCheck": true
+  }
+}

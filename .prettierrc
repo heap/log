@@ -5,13 +5,5 @@
   "semi": true,
   "singleQuote": true,
   "tabWidth": 2,
-  "trailingComma": "all",
-  "overrides": [
-    {
-      "files": "tracker/web/**/*.js",
-      "options": {
-        "trailingComma": "none"
-      }
-    }
-  ]
+  "trailingComma": "all"
 }
