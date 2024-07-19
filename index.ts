@@ -1,8 +1,8 @@
 import * as os from 'os';
 import * as path from 'path';
 
-import * as winston from 'winston';
 import fclone from 'fclone';
+import * as winston from 'winston';
 
 import { MetadataRewriter } from 'winston';
 import { argv } from 'yargs';
@@ -14,6 +14,7 @@ require('winston-log-and-exit');
 
 const isProd = process.env.NODE_ENV === 'prod';
 const isECS = process.env.HEAP_ECS === 'true';
+const isKubernetes = !!process.env.POD_NAMESPACE;
 
 type HeapArgV = {
   pm2path: string;
@@ -50,7 +51,7 @@ const rewriters: Array<MetadataRewriter> = [
   },
 ];
 
-if (isECS) {
+if (isECS || isKubernetes) {
   rewriters.push((label, msg, meta) => {
     // First, check if the meta object is actually an error. In this case we want to preserve
     // the error message (which would otherwise be clobbered by the log message). Winston populates
@@ -82,14 +83,14 @@ if (isECS) {
 const logger = new winston.Logger();
 logger.rewriters = rewriters;
 logger.add(winston.transports.Console, {
-  json: isECS,
+  json: isECS || isKubernetes,
   stringify: (obj) => JSON.stringify(obj),
-  colorize: !isECS,
+  colorize: !isECS && !isKubernetes,
   timestamp: isProd,
   level: process.env.LOG_LEVEL || 'info',
 });
 
-if (isProd && !isECS) {
+if (isProd && !isECS && !isKubernetes) {
   const fluentConfig = {
     host: FLUENT_HOST,
     port: FLUENT_PORT,
