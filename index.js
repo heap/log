@@ -80,15 +80,4 @@ logger.add(winston.transports.Console, {
   level: process.env.LOG_LEVEL || 'info'
 });
 
-if (isProd && !isECS) {
-  var fluentConfig = {
-    host: 'localhost',
-    port: 24224,
-    timeout: 3.0
-  };
-  var fluentTransport = require('fluent-logger').support.winstonTransport();
-  var transport = new fluentTransport('heap.coffee', fluentConfig);
-  logger.add(transport, null, true);
-}
-
 module.exports = logger;
