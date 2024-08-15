@@ -1,14 +1,11 @@
 import * as os from 'os';
 import * as path from 'path';
 
-import * as winston from 'winston';
 import fclone from 'fclone';
+import * as winston from 'winston';
 
 import { MetadataRewriter } from 'winston';
 import { argv } from 'yargs';
-import { FLUENT_HOST, FLUENT_PORT, FLUENT_TIMEOUT } from './constants';
-
-const fluentLogger = require('fluent-logger');
 
 require('winston-log-and-exit');
 
@@ -88,16 +85,5 @@ logger.add(winston.transports.Console, {
   timestamp: isProd,
   level: process.env.LOG_LEVEL || 'info',
 });
-
-if (isProd && !isECS) {
-  const fluentConfig = {
-    host: FLUENT_HOST,
-    port: FLUENT_PORT,
-    timeout: FLUENT_TIMEOUT,
-  };
-  const fluentTransport = fluentLogger.support.winstonTransport();
-  const transport = new fluentTransport('heap.coffee', fluentConfig);
-  logger.add(transport, null, true);
-}
 
 module.exports = logger;
