@@ -11,6 +11,8 @@ require('winston-log-and-exit');
 
 const isProd = process.env.NODE_ENV === 'prod';
 const isECS = process.env.HEAP_ECS === 'true';
+const isK8s = !!process.env.POD_NAMESPACE;
+const isProdDeployment = isECS || isK8s;
 
 type HeapArgV = {
   pm2path: string;
@@ -47,7 +49,7 @@ const rewriters: Array<MetadataRewriter> = [
   },
 ];
 
-if (isECS) {
+if (isProdDeployment) {
   rewriters.push((label, msg, meta) => {
     // First, check if the meta object is actually an error. In this case we want to preserve
     // the error message (which would otherwise be clobbered by the log message). Winston populates
@@ -79,9 +81,9 @@ if (isECS) {
 const logger = new winston.Logger();
 logger.rewriters = rewriters;
 logger.add(winston.transports.Console, {
-  json: isECS,
+  json: isProdDeployment,
   stringify: (obj) => JSON.stringify(obj),
-  colorize: !isECS,
+  colorize: !isProdDeployment,
   timestamp: isProd,
   level: process.env.LOG_LEVEL || 'info',
 });
