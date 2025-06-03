@@ -6,7 +6,9 @@ var argv = require('yargs').argv;
 require('winston-log-and-exit');
 
 var isProd = process.env.NODE_ENV === 'prod';
-var isECS = process.env.HEAP_ECS == 'true';
+var isECS = process.env.HEAP_ECS === 'true';
+const isK8s = !!process.env.POD_NAMESPACE;
+const isProdDeployment = isECS || isK8s;
 
 /*
 TODO: This should be configured by an external file.
@@ -41,7 +43,7 @@ var rewriters = [
   }
 ]
 
-if (isECS) {
+if (isProdDeployment) {
   rewriters.push(function(label,msg, meta) {
     // First, check if the meta object is actually an error. In this case we want to preserve
     // the error message (which would otherwise be clobbered by the log message). Winston populates
@@ -73,11 +75,11 @@ if (isECS) {
 var logger = new (winston.Logger)({rewriters});
 
 logger.add(winston.transports.Console, {
-  json: isECS,
+  json: isProdDeployment,
   stringify: (obj) => JSON.stringify(obj),
-  colorize: !isECS,
+  colorize: !isProdDeployment,
   timestamp: isProd,
-  level: process.env.LOG_LEVEL || 'info'
+  level: process.env.LOG_LEVEL || 'info',
 });
 
 module.exports = logger;
